@@ -10,14 +10,14 @@ This version of the API enables remote payment and some remote connect/disconnec
 All API requests are authenticated using the "Authentication-Token" header. In the code samples, replace 'your_auth_token' with the token you obtain from below.
 
 ### Obtaining a token:
-In your ThunderCloud, navigate to a vendor's information page. In the "Information" box, click "View credentials" under API Credentials.
+In your ThunderCloud, navigate to a sales account's information page. In the "Information" box, click "View Credentials" under API Credentials.
 In the popup window appearing, you will find an authentication token under "API token". Copy it and give it to the trusted person/service who will be consuming the API.
-This token gives access to every API Call, including creating transactions using this vendor's account. 
-Tokens are reset if the User's settings are changed.
+This token gives access to every API Call, including creating transactions using this sales account. 
+Tokens are reset if the user's settings are changed. You can reset the tokens by clicking "Reset Credentials" under API Credentials.
 
-You need to be signed in with Operator privileges to obtain a token on a vendor account.
+You need to be signed in with Operator privileges to obtain a token on a sales account.
 
-### Missing or invalid token
+### Missing or Invalid Token
 
 + Response 401 (application/json)
 
@@ -31,14 +31,14 @@ You need to be signed in with Operator privileges to obtain a token on a vendor 
             }        
 
 ## Encoding
-All API requests and responses should be encoded are encoded with UTF-8, which is required by the JSON standard.
+All API requests and responses that should be encoded are encoded with UTF-8, which is required by the JSON standard.
 Consumers of the API need to convert between UTF-8 and their desired encoding.
 
 ## Endpoint
 From the same popup window used to obtain an authentication token, retrieve the "API endpoint"
 This API endpoint will be the same URL you use to access the ThunderCloud system at the URI "/api/v0/"
 
-### Invalid endpoint
+### Invalid Endpoint
 
 + Response 404 (application/json)
 
@@ -51,7 +51,7 @@ This API endpoint will be the same URL you use to access the ThunderCloud system
                 "status": "failure"
             }
 
-## POST parameters
+## POST Parameters
 
 SparkMeter uses POST method for requests that need to either submit new data or modify existing data.
 There are two different ways of providing the POST APIs with data.
@@ -59,18 +59,21 @@ There are two different ways of providing the POST APIs with data.
 You can pass in parameters either by using application/x-www-form-urlencoded or application/json.
 
 ### Form
-application/x-www-form-urlencoded is the standard way a web browser uses to submit forms, most http libraries will default to this, parameters are passed in like this:
+application/x-www-form-urlencoded is the standard way a web browser uses to submit forms, most http libraries will default to this. Parameters are passed in like this:
 
-        param1=value1&param2=value2
+        param1=value1 & param2=value2
 
 ### JSON
 application/json is similar, but uses JSON encoding instead, same example as above:
 
-        {"param1":"value1","param2":"value2"}
+        {
+            "param1": "value1",
+            "param2": "value2"
+        }
 
 If unusure how to pass parameters, just use application/x-www-form-urlencoded.
 
-### Unsupported mimetype
+### Unsupported Mimetype
 
 + Response 415 (application/json)
 
@@ -83,38 +86,33 @@ If unusure how to pass parameters, just use application/x-www-form-urlencoded.
                 "status": "failure"
             }
 
-## Description of a typical use case for mobile money
-
 
 ### Requirements
 
 In order to enter a mobile transaction in the SparkMeter system, you need:
 + a valid API token (see above for instructions on how to obtain a token)
 + the code of the customer concerned by the transaction. This code is defined by the system owner and should be unique. It can be found and defined on the customer page.
-+ optionally, an external id for the transaction to be placed in the system. This id is defined and provided by the API consumer, and has to be unique.
++ (optional) an external id for the transaction to be placed in the system. This id is defined and provided by the API consumer, and has to be unique.
 
-The transaction will be placed from the account of the vendor matching the token used, to the customer matching the code provided.
+The transaction will be placed from the sales account matching the token used, to the customer matching the code provided.
 
 ### Step-by-step
 
-1. **Get customer info** using the customer code.
+1. **Get Customer Info** using the customer code.
 
         Upon success of the call, obtain value of field id to get the customer's internal id.
 
-2. **Create transaction**, using the customer's internal id just obtained. 
+2. **Create Transaction**, using the customer's internal id just obtained. 
 
         Optionally, an external_id can be provided for the transaction. 
         The system will reject the transaction if a transaction already exists with this external_id. 
         Upon success, the call returns an internal id for the transaction just created. 
 
-That's it! With SparkMeter's SMS Alert, an SMS can be automatically sent to the customer once the transaction has been validated.
-If you wish to follow the status of a transaction, you can follow these optional steps:
-
-3. [optional] **Wait for the transaction to be processed**. 
+3. Wait for the transaction to be processed. 
 
         Typically, it takes a few minutes for the transaction to be sent to the Meter Application Server and processed there, then synced back.
 
-4. [optional] **Get Transaction** using the internal id obtained from **Create Transaction** or the external id provided to it.
+4. **Get Transaction** using the internal id obtained from **Create Transaction** or the external id provided to it.
 
         Upon success, information is obtained on the status of the transaction.
 
@@ -126,7 +124,7 @@ This call returns information on the connection between the ThunderCloud server 
 
 The information is formatted in a list. Since each ThunderCloud instance is currently only connected to one MAS, the list contains only one element.
 
-*Typical use case*: Check that the MAS is online by retrieving the last date of sync between the servers. `last_sync_date` should never be more than a few minutes old.
+*Typical Use Case*: Check that the MAS is online by retrieving the last date of sync between the servers. `last_sync_date` should never be more than a few minutes old.
 
 + Request (application/json)
 
@@ -136,7 +134,7 @@ The information is formatted in a list. Since each ThunderCloud instance is curr
 
 + Response 200 (application/json)
 
-    Returned the request was processed properly.
+    Returned when the request is processed properly.
     
     + Body
         
@@ -159,7 +157,7 @@ The information is formatted in a list. Since each ThunderCloud instance is curr
 
 Change the operating mode of a meter (on, off, auto). This call requires a valid meter serial number.
 
-*Typical use case*: Turn a meter Off based on information external to SparkMeter system.
+*Typical Use Case*: Turn a meter Off based on information external to SparkMeter system.
 
 See the SparkMeter documentation for more information about the values of the state.
 
@@ -172,7 +170,7 @@ See the SparkMeter documentation for more information about the values of the st
 
     + state: `auto` (required, string) - State to set, either "on", "off" or "auto".
 
-+ Request (application/x-www-form-urlencoded)
++ Request (application/json)
 
     + Headers
     
@@ -180,11 +178,13 @@ See the SparkMeter documentation for more information about the values of the st
     
     + Body
     
-            state=on
+            {
+                "state": "on"
+            }
 
 + Response 200 (application/json)
 
-    Returned the request was processed properly.
+    Returned when the request is processed properly.
 
     + Body
 
@@ -221,9 +221,9 @@ See the SparkMeter documentation for more information about the values of the st
 
 This call provides information on the customer referred to in the query.
 
-The `customer_code` input must match exactly a "Customer code" field of an existing meter.
+The `customer_code` input must match exactly a "Customer Code" field of an existing meter.
 
-*Typical use cases*: 
+*Typical Use Cases*: 
 - Retrieve last account balance - `credit_balance` - for a given customer. 
 - Get the internal id - `id` - of a customer, to be used in a subsequent **Create Transaction** call.
 
@@ -241,7 +241,7 @@ The `customer_code` input must match exactly a "Customer code" field of an exist
 
 + Response 200 (application/json)
 
-    Returned the request was processed properly.
+    Returned when the request is processed properly.
 
     + Body
     
@@ -284,15 +284,15 @@ The `customer_code` input must match exactly a "Customer code" field of an exist
 
 # Group Transaction
 
-## Create transaction [POST /transaction/]
+## Create Transaction [POST /transaction/]
 
 This call creates a transaction in the SparkMeter system, from the vendor matching the token used to a customer.
 
-The customer must be referenced by its internal id, which can be obtained from a **Customer Info** call.
+The customer must be referenced by its internal id, which can be obtained from a **Get Customer Info** call.
 
-Optionally, an external identifier can be given as an argument. This id needs to be unique - a transaction with an external id that has already be used in th past will be refused. It can be used later to gather the status of the transaction once it has been placed.
+Optionally, an external identifier can be given as an argument. This id needs to be unique - a transaction with an external id that has already be used in the past will be refused. It can be used later to gather the status of the transaction once it has been placed.
 
-*Typical use case*: Automatically insert mobile money transactions in the SparkMeter system. 
+*Typical Use Case*: Automatically insert mobile money transactions in the SparkMeter system. 
 
 + Attributes
 
@@ -301,7 +301,7 @@ Optionally, an external identifier can be given as an argument. This id needs to
     + external_id: `abc123` (optional, string) - external identifier for this transaction
     + source: `cash` (optional, string) - either `cash` or `bonus`
 
-+ Request (application/x-www-form-urlencoded)
++ Request (application/json)
 
     + Headers
     
@@ -309,11 +309,16 @@ Optionally, an external identifier can be given as an argument. This id needs to
 
     + Body
     
-            customer_id=60c8aa08-71a3-4d33-934c-66b32f5224bb&amount=48.5&external_id=abc123&source=cash
+            {
+                "customer_id": "60c8aa08-71a3-4d33-934c-66b32f5224bb",
+                "amount": 48.5,
+                "external_id": "abc123",
+                "source": "cash"
+            }
 
 + Response 201 (application/json)
 
-    Returned the request was processed properly and the transaction has been created.
+    Returned when the request is processed properly and the transaction has been created.
 
     + Headers
 
@@ -377,11 +382,11 @@ Optionally, an external identifier can be given as an argument. This id needs to
 
 Get the status of a given transaction. 
 
-The id given in argument can be either an internal id (returned as a response to a **Create transaction** call) or an external id (provided as an argument to a valid **Create transaction** call).
+The id given in argument can be either an internal id (returned as a response to a **Create transaction** call) or an external id (provided as an argument to a valid **Create Transaction** call).
 
-The `status` field can take the following values: "not-processed", "processed", "error". If connection can be established between the Cloud and the Base Station, it takes a few minutes for a transaction to change from "not-processed" to "processed"
+The `status` field can take the following values: "not-processed", "processed", "error". If connection can be established between the ThunderCloud and the Base Station, it takes a few minutes for a transaction to change from "not-processed" to "processed"
 
-*Typical use case*: A few minutes after a **Create transaction** call, check that the transaction has been processed.   
+*Typical use case*: A few minutes after a **Create Transaction** call, check that the transaction has been processed.   
 
 
 + Parameters
@@ -396,7 +401,7 @@ The `status` field can take the following values: "not-processed", "processed", 
 
 + Response 200 (application/json)
 
-    Returned if the request was processed properly.
+    Returned when the request is processed properly.
 
     + Body
     
@@ -408,8 +413,14 @@ The `status` field can take the following values: "not-processed", "processed", 
                 "source": "cash",
                 "id": "d362ed9f-a3e9-49ed-a244-cd9a4776df59"
                 "external_id": "abc123",
-                "from": { "type": "vendor", "id": "d19d9de4-5676-4c56-82ca-3c1bafbb1c74" },
-                "to": { "type": "customer", "id": "63fb9295-716f-41d7-8cd3-4d29404cd70d" }
+                "from": { 
+                    "type": "vendor", 
+                    "id": "d19d9de4-5676-4c56-82ca-3c1bafbb1c74" 
+                },
+                "to": { 
+                    "type": "customer", 
+                    "id": "63fb9295-716f-41d7-8cd3-4d29404cd70d" 
+                }
             }
 
 + Response 404 (application/json)
@@ -435,7 +446,7 @@ The phone number used in the API must belong to a customer in the SparkMeter sys
         The external ID from the SMS Gateway. This is optional, but must be unique if provided.
     + phone_number: `+11231231234` (required, string)
         The phone number that sent the message, in must be in E164 format. It must be listed under a customer in the SparkMeter system.
-    + text: `BAL` (required, string)
+    + message: `BAL` (required, string)
         The incoming message.
     + timestamp: `2016-02-23T22:49:05+00:00` (optional, string)
         If provided, this timestamp will be used by SparkMeter as the date the message was received and should respect ISO 8601 date/time format. If not, SparkMeter will use its own timestamp.
@@ -457,7 +468,7 @@ The phone number used in the API must belong to a customer in the SparkMeter sys
     
 + Response 201 (application/json)
 
-    The incoming request was properly handled, `text` was parsed successfully and a reply to the command was returned.
+    The incoming request was properly handled, the message text was parsed and a reply to the command was returned.
 
     + Body
 
@@ -465,8 +476,8 @@ The phone number used in the API must belong to a customer in the SparkMeter sys
                 "error": null,
                 "message": {
                     "id": "x028574c-01af-4f5e-adad-a1e2eb804611",
-                    "phone_number": "+11231231234",
-                    "text": "The balance for Mr. Julio is $500.",
+                    "to": "+11231231234",
+                    "message": "The balance for Mr. Julio is $500.",
                     "timestamp": "2016-02-23T22:49:05+00:00"
                 },
                 "status": "success"
@@ -478,9 +489,9 @@ The phone number used in the API must belong to a customer in the SparkMeter sys
     
     This happens under the following circumstances:
     
-    + `text` could not be parsed.
+    + The message "text" could not be parsed.
     
-    + A customer could not be found with the specified `phone_number`.
+    + A customer could not be found with the specified "phone_number".
 
     + Body
 
@@ -488,8 +499,8 @@ The phone number used in the API must belong to a customer in the SparkMeter sys
                 "error": null,
                 "message": {
                     "id": "x028574c-01af-4f5e-adad-a1e2eb804611",
-                    "phone_number": "+11231231234",
-                    "text": "This phone number is not recognized by SparkMeter."
+                    "to": "+11231231234",
+                    "message": "This phone number is not recognized by SparkMeter."
                     "timestamp": "2016-02-23T22:49:05+00:00"
                 },
                 "status": "error"
@@ -501,10 +512,10 @@ The phone number used in the API must belong to a customer in the SparkMeter sys
     
     This happens under the following circumstances:
     
-    + Missing `phone_number` parameter.
-    + Missing `text` parameter.
-    + The provided `phone_number` could not be understood.
-    + The provided `timestamp` could not be understood.
+    + Missing "phone_number" parameter.
+    + Missing "text" parameter.
+    + The provided "phone_number" could not be understood.
+    + The provided "timestamp" could not be understood.
     
     + Body
 
@@ -534,7 +545,7 @@ This API call returns the SMS Messages that are waiting to be delivered. By defa
 
 + Parameters
     + mark_delivered: `true` (optional, string)
-        By default, messages are marked as delivered. Specify `false` to keep the messages as pending and keep them in the queue.
+        By default, messages are marked as delivered. Specify `false` to keep the messages as pending and keep them in the queue. If this is passed in, the PUT verb has to be used instead of the GET verb.
 
 + Request (application/json)
 
@@ -549,7 +560,6 @@ This API call returns the SMS Messages that are waiting to be delivered. By defa
     + Body
 
             {
-                "error": "null",
                 "messages": [
                     {
                         "id": "x028574c-01af-4f5e-adad-a1e2eb804611",
@@ -557,8 +567,7 @@ This API call returns the SMS Messages that are waiting to be delivered. By defa
                         "text": "The balance for Mr. Julio is $500.",
                         "timestamp": "2016-02-23T22:49:05+00:00"
                     }
-                ],
-                "status": "success"
+                ]
             }         
 
 + Response 404 (application/json)
@@ -593,7 +602,6 @@ This API call marks specific messages as delivered and removes them from the que
     + Body
 
             {
-                "error": "null",
                 "messages": [
                     {
                         "id": "x028574c-01af-4f5e-adad-a1e2eb804612",
@@ -603,8 +611,7 @@ This API call marks specific messages as delivered and removes them from the que
                         "id": "x028574c-01af-4f5e-adad-a1e2eb804611",
                         "status": "removed"
                     }
-                ],
-                "status": "success"
+                ]
             }         
 
 + Response 404 (application/json)
